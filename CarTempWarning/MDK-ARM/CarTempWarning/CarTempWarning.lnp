@@ -1,0 +1,28 @@
+--cpu Cortex-M3
+"cartempwarning\startup_stm32f103xb.o"
+"cartempwarning\main.o"
+"cartempwarning\gpio.o"
+"cartempwarning\spi.o"
+"cartempwarning\usart.o"
+"cartempwarning\stm32f1xx_it.o"
+"cartempwarning\stm32f1xx_hal_msp.o"
+"cartempwarning\stm32f1xx_hal_gpio_ex.o"
+"cartempwarning\stm32f1xx_hal_spi.o"
+"cartempwarning\stm32f1xx_hal.o"
+"cartempwarning\stm32f1xx_hal_rcc.o"
+"cartempwarning\stm32f1xx_hal_rcc_ex.o"
+"cartempwarning\stm32f1xx_hal_gpio.o"
+"cartempwarning\stm32f1xx_hal_dma.o"
+"cartempwarning\stm32f1xx_hal_cortex.o"
+"cartempwarning\stm32f1xx_hal_pwr.o"
+"cartempwarning\stm32f1xx_hal_flash.o"
+"cartempwarning\stm32f1xx_hal_flash_ex.o"
+"cartempwarning\stm32f1xx_hal_exti.o"
+"cartempwarning\stm32f1xx_hal_tim.o"
+"cartempwarning\stm32f1xx_hal_tim_ex.o"
+"cartempwarning\stm32f1xx_hal_uart.o"
+"cartempwarning\system_stm32f1xx.o"
+--strict --scatter "CarTempWarning\CarTempWarning.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "CarTempWarning.map" -o CarTempWarning\CarTempWarning.axf
