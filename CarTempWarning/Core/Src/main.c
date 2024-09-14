@@ -18,12 +18,18 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "i2c.h"
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "oled.h"
+#include "bmp280.h"
+#include "stdlib.h"
+#include "stdio.h"
+#include "string.h"
 
 /* USER CODE END Includes */
 
@@ -45,13 +51,19 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+char tempToShow[6];
+char tempToSet[5];
+float T = 0;
+int32_t Tset = 27;
+uint64_t P = 0;
+int setFlag = 0;
+int peopleFlag = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void oledShowAll(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -90,8 +102,23 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI1_Init();
   MX_USART1_UART_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+	
 
+	OLED_Init();
+	OLED_DisPlay_On();
+	OLED_ColorTurn(0);//0正常显示，1 反色显示
+	OLED_DisplayTurn(0);//0正常显示 1 屏幕翻转显示
+	OLED_Clear();
+	OLED_Refresh();
+	HAL_UART_Transmit(&huart1,(const uint8_t *)"OLED_InitOK",strlen("OLED_InitOK"),100);
+	HAL_UART_Transmit(&huart1,(const uint8_t *)"\r\n",strlen("\r\n"),100);
+	
+	BMP280_InitALL();
+	HAL_UART_Transmit(&huart1,(const uint8_t *)"BMP_InitOK",strlen("BMP_InitOK"),100);
+	HAL_UART_Transmit(&huart1,(const uint8_t *)"\r\n",strlen("\r\n"),100);
+	HAL_UART_Transmit(&huart1,(const uint8_t *)"SysStart\r\n",strlen("SysStart\r\n"),100);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -100,8 +127,28 @@ int main(void)
   {
 		
 		//这是一行中文注释
-		HAL_UART_Transmit(&huart1,"test3311",20,10);
-		HAL_Delay(100);
+		
+		HAL_Delay(200);
+		HAL_GPIO_TogglePin(LEDB_GPIO_Port,LEDB_Pin);
+		
+		oledShowAll();
+		
+		if(T >= Tset)
+		{
+			snprintf(tempToShow,sizeof(tempToShow),"%.2f",T);
+			snprintf(tempToSet,sizeof(tempToSet),"%d",Tset);
+			HAL_GPIO_WritePin(Buzzer_GPIO_Port,Buzzer_Pin,GPIO_PIN_RESET);
+			HAL_UART_Transmit(&huart1, (const uint8_t *)"TemperatureWarning!!!Current:", strlen("TemperatureWarning!!!Current:"), 300);
+			HAL_UART_Transmit(&huart1, (const uint8_t *)tempToShow, strlen(tempToShow), 300);
+			HAL_UART_Transmit(&huart1, (const uint8_t *)"\r\nSetting:", strlen("\r\nSetting:"), 300);
+			HAL_UART_Transmit(&huart1, (const uint8_t *)tempToSet, strlen(tempToSet), 300);
+			HAL_UART_Transmit(&huart1, (const uint8_t *)"\r\n\r\n", strlen("\r\n\r\n"), 300);
+		}
+		else
+		{
+			HAL_GPIO_WritePin(Buzzer_GPIO_Port,Buzzer_Pin,GPIO_PIN_SET);
+		}
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -149,7 +196,32 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void oledShowAll()
+{
+		T = BMP280_GetTemperature()/100.0;
+		snprintf(tempToShow,sizeof(tempToShow),"%.2f",T);
+		snprintf(tempToSet,sizeof(tempToSet),"%d",Tset);
 
+		OLED_ShowString(0,0,(uint8_t *)"Mode:",16,1);
+		if(setFlag == 0)
+			OLED_ShowString(40,0,(uint8_t *)"Running",16,1);
+		else
+			OLED_ShowString(40,0,(uint8_t *)"Setting",16,1);
+		
+		
+		OLED_ShowString(0,16,(uint8_t *)"People:",16,1);
+		if(peopleFlag == 0)
+			OLED_ShowString(56,16,(uint8_t *)"No",16,1);
+		else
+			OLED_ShowString(56,16,(uint8_t *)"Yes",16,1);
+		
+		OLED_ShowString(0,32,(uint8_t *)"TempNow:",16,1);
+		OLED_ShowString(64,32,(uint8_t*)tempToShow,16,1);
+		OLED_ShowString(0,48,(uint8_t *)"TempSet:",16,1);  
+		OLED_ShowString(64,48,(uint8_t *)tempToSet,16,1);
+		OLED_Refresh();
+	
+}
 /* USER CODE END 4 */
 
 /**

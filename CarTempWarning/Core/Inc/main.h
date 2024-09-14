@@ -77,8 +77,14 @@ void Error_Handler(void);
 #define LEDB_GPIO_Port GPIOB
 #define Buzzer_Pin GPIO_PIN_10
 #define Buzzer_GPIO_Port GPIOB
-#define DS18B20_Pin GPIO_PIN_11
-#define DS18B20_GPIO_Port GPIOB
+#define Key5_Pin GPIO_PIN_12
+#define Key5_GPIO_Port GPIOB
+#define Key6_Pin GPIO_PIN_13
+#define Key6_GPIO_Port GPIOB
+#define Key7_Pin GPIO_PIN_14
+#define Key7_GPIO_Port GPIOB
+#define Key8_Pin GPIO_PIN_15
+#define Key8_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
