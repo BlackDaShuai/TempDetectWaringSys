@@ -535,6 +535,16 @@
               <FileType>5</FileType>
               <FilePath>.\HARDWARE\oledfont.h</FilePath>
             </File>
+            <File>
+              <FileName>keyscan.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\HARDWARE\keyscan.c</FilePath>
+            </File>
+            <File>
+              <FileName>keyscan.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\HARDWARE\keyscan.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

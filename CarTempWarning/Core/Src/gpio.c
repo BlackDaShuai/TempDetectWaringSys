@@ -53,8 +53,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(OLEDRES_GPIO_Port, OLEDRES_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, OLEDDC_Pin|LEDB_Pin|Key5_Pin|Key6_Pin
-                          |Key7_Pin|Key8_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, OLEDDC_Pin|LEDB_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET);
@@ -91,10 +90,8 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(PeopleDetect_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PBPin PBPin PBPin PBPin
-                           PBPin PBPin */
-  GPIO_InitStruct.Pin = LEDB_Pin|Buzzer_Pin|Key5_Pin|Key6_Pin
-                          |Key7_Pin|Key8_Pin;
+  /*Configure GPIO pins : PBPin PBPin */
+  GPIO_InitStruct.Pin = LEDB_Pin|Buzzer_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

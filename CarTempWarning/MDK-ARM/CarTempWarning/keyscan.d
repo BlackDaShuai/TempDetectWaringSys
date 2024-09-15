@@ -1,4 +1,4 @@
-cartempwarning/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
+cartempwarning/keyscan.o: HARDWARE\keyscan.c ..\Core\Inc\main.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h \
   ..\Core\Inc\stm32f1xx_hal_conf.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h \
@@ -28,8 +28,4 @@ cartempwarning/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_spi.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h \
-  ..\Core\Inc\i2c.h ..\Core\Inc\spi.h ..\Core\Inc\usart.h \
-  ..\Core\Inc\gpio.h HARDWARE\oled.h \
-  C:\Keil_v5\ARM\ARMCLANG\include\stdlib.h HARDWARE\bmp280.h \
-  HARDWARE\bmp280_constants.h C:\Keil_v5\ARM\ARMCLANG\include\stdio.h \
-  C:\Keil_v5\ARM\ARMCLANG\include\string.h HARDWARE\keyscan.h
+  HARDWARE\keyscan.h

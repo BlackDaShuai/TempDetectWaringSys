@@ -30,6 +30,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
+#include "keyscan.h"
 
 /* USER CODE END Includes */
 
@@ -51,11 +52,20 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-char tempToShow[6];
-char tempToSet[5];
+
+//存储设置的温度
+int32_t TsetYes = 28;
+int32_t TsetNo = 30;
+//存储检测的温度
 float T = 0;
-int32_t Tset = 27;
-uint64_t P = 0;
+//用于存储转换成字符串的设置温度
+char tempToSetYes[5];
+char tempToSetNo[5];
+//用于存储转换成字符串的检测温度
+char tempToShow[6];
+
+int t = 0;
+
 int setFlag = 0;
 int peopleFlag = 0;
 /* USER CODE END PV */
@@ -64,6 +74,8 @@ int peopleFlag = 0;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void oledShowAll(void);
+void tempWarning(void);
+void KeyTask(int);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -125,28 +137,34 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+		KeyTask(keyScan());
 		
-		//这是一行中文注释
-		
-		HAL_Delay(200);
-		HAL_GPIO_TogglePin(LEDB_GPIO_Port,LEDB_Pin);
-		
-		oledShowAll();
-		
-		if(T >= Tset)
+		//运行模式
+		if(setFlag == 0)
 		{
-			snprintf(tempToShow,sizeof(tempToShow),"%.2f",T);
-			snprintf(tempToSet,sizeof(tempToSet),"%d",Tset);
-			HAL_GPIO_WritePin(Buzzer_GPIO_Port,Buzzer_Pin,GPIO_PIN_RESET);
-			HAL_UART_Transmit(&huart1, (const uint8_t *)"TemperatureWarning!!!Current:", strlen("TemperatureWarning!!!Current:"), 300);
-			HAL_UART_Transmit(&huart1, (const uint8_t *)tempToShow, strlen(tempToShow), 300);
-			HAL_UART_Transmit(&huart1, (const uint8_t *)"\r\nSetting:", strlen("\r\nSetting:"), 300);
-			HAL_UART_Transmit(&huart1, (const uint8_t *)tempToSet, strlen(tempToSet), 300);
-			HAL_UART_Transmit(&huart1, (const uint8_t *)"\r\n\r\n", strlen("\r\n\r\n"), 300);
+			//光电传感器检测是否有人
+			if(HAL_GPIO_ReadPin(PeopleDetect_GPIO_Port,PeopleDetect_Pin) == 0)
+			{
+					peopleFlag = 1;
+			}
+			else{peopleFlag = 0;}
+		
+			oledShowAll();
+			
+			
+			t++;
+			if(t >=5)
+			{
+				tempWarning();
+				t = 0;
+			}
 		}
-		else
+		
+		//设置模式
+		else if(setFlag == 1)
 		{
-			HAL_GPIO_WritePin(Buzzer_GPIO_Port,Buzzer_Pin,GPIO_PIN_SET);
+			oledShowAll();
+			
 		}
 
     /* USER CODE END WHILE */
@@ -198,10 +216,13 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 void oledShowAll()
 {
+	//温度检测
 		T = BMP280_GetTemperature()/100.0;
+	//转换成字符串
 		snprintf(tempToShow,sizeof(tempToShow),"%.2f",T);
-		snprintf(tempToSet,sizeof(tempToSet),"%d",Tset);
-
+		snprintf(tempToSetYes,sizeof(tempToSetYes),"%d",TsetYes);
+		snprintf(tempToSetNo,sizeof(tempToSetNo),"%d",TsetNo);
+	//OLED显示
 		OLED_ShowString(0,0,(uint8_t *)"Mode:",16,1);
 		if(setFlag == 0)
 			OLED_ShowString(40,0,(uint8_t *)"Running",16,1);
@@ -211,17 +232,105 @@ void oledShowAll()
 		
 		OLED_ShowString(0,16,(uint8_t *)"People:",16,1);
 		if(peopleFlag == 0)
-			OLED_ShowString(56,16,(uint8_t *)"No",16,1);
+			OLED_ShowString(56,16,(uint8_t *)"No ",16,1);
 		else
 			OLED_ShowString(56,16,(uint8_t *)"Yes",16,1);
 		
 		OLED_ShowString(0,32,(uint8_t *)"TempNow:",16,1);
 		OLED_ShowString(64,32,(uint8_t*)tempToShow,16,1);
-		OLED_ShowString(0,48,(uint8_t *)"TempSet:",16,1);  
-		OLED_ShowString(64,48,(uint8_t *)tempToSet,16,1);
+		OLED_ShowString(0,48,(uint8_t *)"TempSet:",16,1); 
+		if(peopleFlag == 0)
+			OLED_ShowString(64,48,(uint8_t *)tempToSetNo,16,1);
+		else
+			OLED_ShowString(64,48,(uint8_t *)tempToSetYes,16,1);
+	//刷新屏幕
 		OLED_Refresh();
 	
 }
+
+
+
+void tempWarning()
+{
+	//有人温度检测以及报警
+		if(peopleFlag == 1)
+		{
+			if(T >= TsetYes)
+			{
+				snprintf(tempToShow,sizeof(tempToShow),"%.2f",T);
+				snprintf(tempToSetYes,sizeof(tempToSetYes),"%d",TsetYes);
+				HAL_GPIO_WritePin(Buzzer_GPIO_Port,Buzzer_Pin,GPIO_PIN_RESET);
+				//发送串口消息
+				HAL_UART_Transmit(&huart1, (const uint8_t *)"PersonInCar,TempWarning!!!Current:", strlen("PersonInCar,TempWarning!!!Current:"), 300);
+				HAL_UART_Transmit(&huart1, (const uint8_t *)tempToShow, strlen(tempToShow), 300);
+				HAL_UART_Transmit(&huart1, (const uint8_t *)"\r\nSetting:", strlen("\r\nSetting:"), 300);
+				HAL_UART_Transmit(&huart1, (const uint8_t *)tempToSetYes, strlen(tempToSetYes), 300);
+				HAL_UART_Transmit(&huart1, (const uint8_t *)"\r\n\r\n", strlen("\r\n\r\n"), 300);
+			}
+			else
+			{
+				HAL_GPIO_WritePin(Buzzer_GPIO_Port,Buzzer_Pin,GPIO_PIN_SET);
+			}
+		}
+		
+	//无人温度检测以及报警
+		if(peopleFlag == 0)
+		{
+			if(T >= TsetNo)
+			{
+				snprintf(tempToShow,sizeof(tempToShow),"%.2f",T);
+				snprintf(tempToSetNo,sizeof(tempToSetNo),"%d",TsetNo);
+				HAL_GPIO_WritePin(Buzzer_GPIO_Port,Buzzer_Pin,GPIO_PIN_RESET);
+				//发送串口消息
+				HAL_UART_Transmit(&huart1, (const uint8_t *)"CarEmpty,TempWarning!!!Current:", strlen("CarEmpty,TempWarning!!!Current:"), 300);
+				HAL_UART_Transmit(&huart1, (const uint8_t *)tempToShow, strlen(tempToShow), 300);
+				HAL_UART_Transmit(&huart1, (const uint8_t *)"\r\nSetting:", strlen("\r\nSetting:"), 300);
+				HAL_UART_Transmit(&huart1, (const uint8_t *)tempToSetNo, strlen(tempToSetNo), 300);
+				HAL_UART_Transmit(&huart1, (const uint8_t *)"\r\n\r\n", strlen("\r\n\r\n"), 300);
+			}
+			else
+			{
+				HAL_GPIO_WritePin(Buzzer_GPIO_Port,Buzzer_Pin,GPIO_PIN_SET);
+			}
+		}
+}
+
+void KeyTask(int keynum)
+{
+	if(keynum == 1)
+	{
+		if(setFlag == 0)setFlag = 1;//进入设置
+		else if(setFlag == 1)setFlag = 0;//退出设置
+	}
+	
+	if(keynum == 2)
+	{
+		if(setFlag == 1)//判断是否已经进入设置
+		{
+			if(peopleFlag == 0)peopleFlag = 1;//进入有人温度设置
+			else if(peopleFlag == 1)peopleFlag = 0;//进入无人温度设置
+		}
+	}
+	
+	if(keynum == 3)
+	{
+		if(setFlag == 1)//判断是否已经进入设置
+		{
+			if(peopleFlag == 0)TsetNo++;//无人温度设置
+			else if(peopleFlag == 1)TsetYes++;//有人温度设置
+		}
+	}
+	if(keynum == 4)
+	{
+		if(setFlag == 1)//判断是否已经进入设置
+		{
+			if(peopleFlag == 0)TsetNo--;//无人温度设置
+			else if(peopleFlag == 1)TsetYes--;//有人温度设置
+		}
+	}
+	
+}
+	
 /* USER CODE END 4 */
 
 /**
